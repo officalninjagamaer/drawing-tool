@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ChaosCanvas</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f4f4f4;
+    }
+    #myCanvas {
+      border: 2px solid #333;
+      background-color: #fff;
+      cursor: crosshair;
+    }
+    #toolbar {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="myCanvas" width="800" height="600"></canvas>
+  <div id="toolbar">
+    <button onclick="setTool('pencil')">✏️ Pencil</button>
+    <button onclick="setTool('eraser')">🧽 Eraser</button>
+    <button onclick="setTool('rectangle')">▭ Rectangle</button>
+    <button onclick="setTool('circle')">⚪ Circle</button>
+    <button onclick="setTool('triangle')">🔺 Triangle</button>
+    <input type="color" id="colorPicker" value="#000000">
+  </div>
+
+  <script>
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+    let tool = "pencil";
+    let color = document.getElementById("colorPicker").value;
+    let startX, startY;
+
+    document.getElementById("colorPicker").addEventListener("change", e => {
+      color = e.target.value;
+    });
+
+    function setTool(selectedTool) {
+      tool = selectedTool;
+    }
+
+    canvas.addEventListener("mousedown", e => {
+      drawing = true;
+      startX = e.offsetX;
+      startY = e.offsetY;
+      if (tool === "pencil" || tool === "eraser") draw(e);
+    });
+
+    canvas.addEventListener("mouseup", e => {
+      if (tool !== "pencil" && tool !== "eraser") drawShape(e);
+      drawing = false;
+    });
+
+    canvas.addEventListener("mousemove", e => {
+      if (drawing && (tool === "pencil" || tool === "eraser")) draw(e);
+    });
+
+    function draw(e) {
+      ctx.strokeStyle = tool === "eraser" ? "#fff" : color;
+      ctx.lineWidth = tool === "eraser" ? 20 : 2;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+      ctx.lineTo(e.offsetX + 0.1, e.offsetY + 0.1);
+      ctx.stroke();
+    }
+
+    function drawShape(e) {
+      const endX = e.offsetX;
+      const endY = e.offsetY;
+      const width = endX - startX;
+      const height = endY - startY;
+
+      ctx.fillStyle = color;
+      ctx.strokeStyle = color;
+
+      if (tool === "rectangle") {
+        ctx.fillRect(startX, startY, width, height);
+      } else if (tool === "circle") {
+        ctx.beginPath();
+        ctx.arc(startX, startY, Math.sqrt(width**2 + height**2), 0, 2 * Math.PI);
+        ctx.fill();
+      } else if (tool === "triangle") {
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.lineTo(startX, endY);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  </script>
+</body>
+</html>
